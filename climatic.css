@@ -1,0 +1,786 @@
+/* =============================================================
+   CLIMATIC WIDGET — Pure CSS Visual Engine
+   All weather, time, and seasonal visuals via CSS layers.
+   JS drives state via CSS custom properties on :root.
+   ============================================================= */
+
+/* ---------- Custom Properties (defaults = clear day, spring) ---------- */
+:root {
+  /* Sky */
+  --sky-top: #1e90ff;
+  --sky-mid: #87CEEB;
+  --sky-bottom: #b0e0e6;
+  /* Ambient light */
+  --ambient: 1;
+  /* Stars */
+  --stars-opacity: 0;
+  /* Celestial positions (% of viewport) */
+  --sun-x: 50%;
+  --sun-y: 30%;
+  --sun-opacity: 1;
+  --sun-scale: 1;
+  --moon-x: 50%;
+  --moon-y: 30%;
+  --moon-opacity: 0;
+  --moon-scale: 1;
+  /* Clouds */
+  --cloud-opacity: 0;
+  --cloud-color: rgba(255,255,255,0.9);
+  --cloud-speed: 40s;
+  /* Precipitation */
+  --rain-opacity: 0;
+  --snow-opacity: 0;
+  /* Lightning */
+  --lightning-opacity: 0;
+  /* Fog */
+  --fog-opacity: 0;
+  /* Wind */
+  --wind-opacity: 0;
+  --wind-speed: 3s;
+  --wind-angle: 15deg;
+  /* Ground */
+  --ground-color-1: #4CAF50;
+  --ground-color-2: #388E3C;
+  --ground-color-3: #2E7D32;
+  --ground-height: 18%;
+  /* Creatures */
+  --owl-opacity: 0;
+  --bird-opacity: 1;
+  --firefly-opacity: 0;
+  /* Wet surface */
+  --wet-opacity: 0;
+  /* Snow ground */
+  --snow-ground-opacity: 0;
+  /* Fallen leaves */
+  --leaves-opacity: 0;
+  /* Sun color temp */
+  --sun-hue: 0deg;
+  --sun-warmth: 1;
+  /* Torch / flashlight */
+  --torch-x: -9999px;
+  --torch-y: -9999px;
+  --torch-radius: 250px;
+  --torch-intensity: 0;
+}
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+#climatic-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 3s ease;
+}
+
+/* ====================== LAYER 1: SKY ====================== */
+.sky {
+  background: linear-gradient(
+    180deg,
+    var(--sky-top) 0%,
+    var(--sky-mid) 45%,
+    var(--sky-bottom) 100%
+  );
+  transition: background 4s ease;
+  z-index: 1;
+}
+
+/* Horizon glow (dawn/dusk) */
+.sky::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    var(--sky-bottom) 0%,
+    transparent 70%
+  );
+  opacity: 0.5;
+}
+
+/* ====================== LAYER 2: STARS ====================== */
+.stars {
+  z-index: 2;
+  opacity: var(--stars-opacity);
+  transition: opacity 4s ease;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--twinkle-dur, 3s) ease-in-out infinite alternate;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+
+.star.small { width: 2px; height: 2px; }
+.star.medium { width: 3px; height: 3px; }
+.star.large {
+  width: 4px;
+  height: 4px;
+  box-shadow: 0 0 6px 1px rgba(255,255,255,0.5);
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Shooting star */
+.shooting-star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0;
+  animation: shoot 1.5s ease-out forwards;
+  box-shadow: 0 0 8px 2px rgba(255,255,255,0.6);
+}
+
+.shooting-star::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to left, white, transparent);
+  transform: translateY(-50%);
+}
+
+@keyframes shoot {
+  0% { opacity: 1; transform: translate(0,0) rotate(-30deg); }
+  100% { opacity: 0; transform: translate(-300px, 200px) rotate(-30deg); }
+}
+
+/* ====================== LAYER 3: CELESTIAL BODIES ====================== */
+.celestial {
+  z-index: 3;
+}
+
+.sun {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  left: var(--sun-x);
+  top: var(--sun-y);
+  transform: translate(-50%, -50%);
+  opacity: var(--sun-opacity);
+  transition: left 60s linear, top 60s linear, opacity 3s ease;
+  filter: drop-shadow(0 0 30px rgba(255,215,0,0.6));
+}
+
+.sun svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sun-rays {
+  animation: rotate-rays 20s linear infinite;
+  transform-origin: 50px 50px;
+}
+
+@keyframes rotate-rays {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sun color warmth (redder at horizon) */
+.sun svg circle:nth-child(3) {
+  transition: fill 3s ease;
+}
+
+.moon {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  left: var(--moon-x);
+  top: var(--moon-y);
+  transform: translate(-50%, -50%);
+  opacity: var(--moon-opacity);
+  transition: left 60s linear, top 60s linear, opacity 3s ease;
+  filter: drop-shadow(0 0 20px rgba(200,210,255,0.4));
+}
+
+.moon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ====================== LAYER 4: CLOUDS ====================== */
+.clouds {
+  z-index: 4;
+}
+
+.cloud {
+  position: absolute;
+  color: var(--cloud-color);
+  opacity: var(--cloud-opacity);
+  animation: cloud-drift var(--cloud-speed) linear infinite;
+  transition: opacity 3s ease, color 3s ease;
+}
+
+.cloud svg {
+  width: 100%;
+  height: 100%;
+  filter: blur(1px);
+}
+
+.cloud.cloud-sm { width: 120px; height: 60px; }
+.cloud.cloud-md { width: 200px; height: 100px; }
+.cloud.cloud-lg { width: 300px; height: 140px; }
+
+@keyframes cloud-drift {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(calc(100vw + 120%)); }
+}
+
+/* Dark clouds for storms */
+.cloud.storm {
+  color: rgba(60, 60, 75, 0.95);
+  filter: none;
+}
+
+/* ====================== LAYER 5: PRECIPITATION ====================== */
+.precipitation {
+  z-index: 5;
+}
+
+/* --- Rain --- */
+.raindrop {
+  position: absolute;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, rgba(174, 194, 224, 0.6));
+  opacity: var(--rain-opacity);
+  animation: rain-fall var(--rain-speed, 0.8s) linear infinite;
+  animation-delay: var(--rain-delay, 0s);
+}
+
+@keyframes rain-fall {
+  0% {
+    transform: translateY(-100%) translateX(0);
+    opacity: 0;
+  }
+  10% { opacity: var(--rain-opacity); }
+  90% { opacity: var(--rain-opacity); }
+  100% {
+    transform: translateY(100vh) translateX(calc(var(--wind-offset, 0) * 1px));
+    opacity: 0;
+  }
+}
+
+/* Rain splash at ground */
+.rain-splash {
+  position: absolute;
+  bottom: var(--ground-height);
+  width: 6px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(174, 194, 224, 0.4);
+  opacity: 0;
+  animation: splash 0.6s ease-out forwards;
+}
+
+@keyframes splash {
+  0% { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(3, 1); opacity: 0; }
+}
+
+/* --- Snow --- */
+.snowflake {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  opacity: var(--snow-opacity);
+  animation: snowfall var(--snow-speed, 5s) linear infinite;
+  animation-delay: var(--snow-delay, 0s);
+  box-shadow: 0 0 4px rgba(255,255,255,0.6);
+}
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(-5%) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: var(--snow-opacity); }
+  90% { opacity: var(--snow-opacity); }
+  100% {
+    transform: translateY(100vh) translateX(calc(var(--sway, 30) * 1px)) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ====================== LAYER 6: LIGHTNING ====================== */
+.lightning {
+  z-index: 6;
+  pointer-events: none;
+}
+
+.lightning-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.3);
+  opacity: 0;
+  animation: flash 0.15s ease-out forwards;
+}
+
+@keyframes flash {
+  0% { opacity: 0; }
+  10% { opacity: 0.9; }
+  20% { opacity: 0.2; }
+  30% { opacity: 0.8; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Lightning bolt shape */
+.lightning-bolt {
+  position: absolute;
+  width: 4px;
+  opacity: 0;
+  animation: bolt-flash 0.3s ease-out forwards;
+}
+
+.lightning-bolt svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes bolt-flash {
+  0% { opacity: 0; }
+  5% { opacity: 1; }
+  15% { opacity: 0.3; }
+  25% { opacity: 1; }
+  40% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ====================== LAYER 7: ATMOSPHERE ====================== */
+.atmosphere {
+  z-index: 7;
+}
+
+/* Fog overlay */
+.fog-layer {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  opacity: var(--fog-opacity);
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(200,200,210,0.3) 20%,
+      rgba(200,200,210,0.5) 50%,
+      rgba(200,200,210,0.3) 80%,
+      transparent 100%
+    );
+  animation: fog-drift 30s linear infinite;
+  transition: opacity 4s ease;
+}
+
+.fog-layer:nth-child(2) {
+  animation-delay: -15s;
+  opacity: calc(var(--fog-opacity) * 0.7);
+  top: 10%;
+}
+
+@keyframes fog-drift {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+/* Wind streaks */
+.wind-streak {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  opacity: var(--wind-opacity);
+  transform: rotate(var(--wind-angle));
+  animation: wind-blow var(--wind-speed) linear infinite;
+}
+
+@keyframes wind-blow {
+  0% { transform: translateX(-100%) rotate(var(--wind-angle)); opacity: 0; }
+  20% { opacity: var(--wind-opacity); }
+  80% { opacity: var(--wind-opacity); }
+  100% { transform: translateX(100vw) rotate(var(--wind-angle)); opacity: 0; }
+}
+
+/* ====================== LAYER 8: GROUND ====================== */
+.ground {
+  z-index: 8;
+  top: auto;
+  bottom: 0;
+  height: var(--ground-height);
+}
+
+.ground-surface {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--ground-color-1) 0%,
+    var(--ground-color-2) 50%,
+    var(--ground-color-3) 100%
+  );
+  transition: background 4s ease;
+}
+
+/* Grass blades */
+.grass-container {
+  position: absolute;
+  width: 100%;
+  bottom: 100%;
+  height: 45px;
+  overflow: visible;
+}
+
+.grass-blade {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to top, var(--ground-color-1), #66BB6A);
+  border-radius: 50% 50% 0 0;
+  transform-origin: bottom center;
+  animation: grass-sway var(--grass-speed, 3s) ease-in-out infinite alternate;
+  animation-delay: var(--grass-delay, 0s);
+}
+
+@keyframes grass-sway {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(5deg); }
+}
+
+/* Snow cover on ground */
+.snow-ground {
+  position: absolute;
+  width: 100%;
+  height: 120%;
+  top: -20%;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.95) 0%,
+    rgba(240,245,255,0.9) 30%,
+    rgba(220,230,245,0.85) 100%
+  );
+  opacity: var(--snow-ground-opacity);
+  transition: opacity 4s ease;
+  border-radius: 60% 60% 0 0 / 20% 20% 0 0;
+}
+
+/* Undulating snow hills */
+.snow-ground::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: -5%;
+  width: 110%;
+  height: 30px;
+  background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.95) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.9) 0%, transparent 45%),
+              radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.95) 0%, transparent 50%);
+}
+
+/* Wet surface (rain) */
+.wet-surface {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(100,130,180,0.3) 100%
+  );
+  opacity: var(--wet-opacity);
+  transition: opacity 3s ease;
+}
+
+/* Reflective puddles */
+.wet-surface::before {
+  content: '';
+  position: absolute;
+  bottom: 10%;
+  left: 15%;
+  width: 25%;
+  height: 8px;
+  background: rgba(150,180,220,0.4);
+  border-radius: 50%;
+  box-shadow:
+    60vw 5px 0 2px rgba(150,180,220,0.3),
+    30vw -8px 0 4px rgba(150,180,220,0.25);
+}
+
+/* Fallen autumn leaves */
+.fallen-leaves {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: var(--leaves-opacity);
+  transition: opacity 3s ease;
+}
+
+.fallen-leaf {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 0 50%;
+  transform: rotate(var(--leaf-rot, 45deg));
+}
+
+/* ====================== LAYER 9: CREATURES ====================== */
+.creatures {
+  z-index: 9;
+}
+
+/* Owls */
+.owl {
+  position: absolute;
+  opacity: var(--owl-opacity);
+  transition: opacity 4s ease;
+}
+
+#owl-1 {
+  width: 50px;
+  bottom: var(--ground-height);
+  right: 12%;
+  transform: translateY(-10px);
+}
+
+#owl-2 {
+  width: 38px;
+  bottom: var(--ground-height);
+  right: 8%;
+  transform: translateY(-5px);
+}
+
+.owl svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Owl eye blink */
+.owl svg circle:nth-child(5),
+.owl svg circle:nth-child(6) {
+  animation: owl-blink 3s ease-in-out infinite;
+}
+
+@keyframes owl-blink {
+  0%, 90%, 100% { opacity: 1}
+  95% { opacity: 0}
+}
+
+/* Birds */
+.bird {
+  position: absolute;
+  opacity: var(--bird-opacity);
+  color: rgba(0,0,0,0.6);
+  transition: opacity 4s ease;
+}
+
+.bird svg {
+  width: 100%;
+  height: auto;
+}
+
+#bird-1 {
+  width: 30px;
+  top: 18%;
+  animation: bird-fly 18s linear infinite;
+}
+
+#bird-2 {
+  width: 22px;
+  top: 22%;
+  animation: bird-fly 22s linear infinite;
+  animation-delay: -7s;
+}
+
+#bird-3 {
+  width: 26px;
+  top: 15%;
+  animation: bird-fly 25s linear infinite;
+  animation-delay: -14s;
+}
+
+@keyframes bird-fly {
+  0% { left: -10%; transform: translateY(0); }
+  25% { transform: translateY(-15px); }
+  50% { transform: translateY(5px); }
+  75% { transform: translateY(-8px); }
+  100% { left: 110%; transform: translateY(0); }
+}
+
+/* Bird wing flap */
+.bird svg path {
+  animation: wing-flap 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes wing-flap {
+  0% { d: path("M0,10 Q10,2 20,10 Q30,2 40,10"); }
+  100% { d: path("M0,10 Q10,14 20,10 Q30,14 40,10"); }
+}
+
+/* Fireflies */
+.fireflies {
+  opacity: var(--firefly-opacity);
+  transition: opacity 4s ease;
+}
+
+.firefly {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #FFEB3B;
+  box-shadow: 0 0 8px 3px rgba(255,235,59,0.5);
+  animation:
+    firefly-float var(--ff-dur, 6s) ease-in-out infinite alternate,
+    firefly-glow 2s ease-in-out infinite alternate;
+  animation-delay: var(--ff-delay, 0s);
+}
+
+@keyframes firefly-float {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(var(--ff-dx1, 20px), var(--ff-dy1, -15px)); }
+  66% { transform: translate(var(--ff-dx2, -10px), var(--ff-dy2, 10px)); }
+  100% { transform: translate(var(--ff-dx3, 15px), var(--ff-dy3, -20px)); }
+}
+
+@keyframes firefly-glow {
+  0% { opacity: 0.2; box-shadow: 0 0 4px 1px rgba(255,235,59,0.3); }
+  100% { opacity: 1; box-shadow: 0 0 12px 4px rgba(255,235,59,0.6); }
+}
+
+/* ====================== RAIN GLASS EFFECT ====================== */
+/* Glass droplets overlay for rainy scenarios */
+.glass-drop {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255,255,255,0.3),
+    rgba(255,255,255,0.1) 50%,
+    transparent
+  );
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: inset 0 0 3px rgba(255,255,255,0.1);
+  opacity: var(--rain-opacity);
+  animation: glass-drip var(--drip-dur, 8s) ease-in infinite;
+  animation-delay: var(--drip-delay, 0s);
+}
+
+@keyframes glass-drip {
+  0% { transform: translateY(0); border-radius: 50%; }
+  70% { transform: translateY(0); border-radius: 50%; opacity: var(--rain-opacity); }
+  85% { border-radius: 50% 50% 40% 40%; }
+  100% { transform: translateY(100vh); opacity: 0; border-radius: 50% 50% 30% 30%; }
+}
+
+/* Water trail from glass drops */
+.glass-drop::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 40%;
+  width: 1px;
+  height: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+  animation: drip-trail var(--drip-dur, 8s) ease-in infinite;
+  animation-delay: var(--drip-delay, 0s);
+}
+
+@keyframes drip-trail {
+  0%, 70% { height: 0; }
+  100% { height: 40px; }
+}
+
+/* ====================== GLOBAL AMBIENT OVERLAY ====================== */
+/* Darkness overlay for night / evening — capped at 0.6 so elements stay visible */
+/* Torch cursor punches a radial hole in the darkness */
+#climatic-scene::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 20, calc(min(1 - var(--ambient), 0.6)));
+  z-index: 10;
+  pointer-events: none;
+  transition: background 4s ease;
+  /* Torch punch-through: radial gradient masks a circle around cursor */
+  -webkit-mask-image: radial-gradient(
+    circle var(--torch-radius) at var(--torch-x) var(--torch-y),
+    transparent 0%,
+    transparent calc(100% * var(--torch-intensity) * 0.3),
+    rgba(0,0,0, calc(1 - var(--torch-intensity) * 0.7)) calc(100% * var(--torch-intensity) * 0.6),
+    black 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--torch-radius) at var(--torch-x) var(--torch-y),
+    transparent 0%,
+    transparent calc(100% * var(--torch-intensity) * 0.3),
+    rgba(0,0,0, calc(1 - var(--torch-intensity) * 0.7)) calc(100% * var(--torch-intensity) * 0.6),
+    black 100%
+  );
+}
+
+/* Torch glow — warm light spot that follows cursor */
+.torch-glow {
+  position: absolute;
+  width: calc(var(--torch-radius) * 2.5);
+  height: calc(var(--torch-radius) * 2.5);
+  left: var(--torch-x);
+  top: var(--torch-y);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 240, 180, calc(0.12 * var(--torch-intensity))) 0%,
+    rgba(255, 220, 140, calc(0.06 * var(--torch-intensity))) 30%,
+    transparent 70%
+  );
+  z-index: 11;
+  pointer-events: none;
+  opacity: var(--torch-intensity);
+  transition: opacity 0.5s ease;
+}
+
+/* ====================== RESPONSIVE ====================== */
+@media (max-width: 600px) {
+  .sun { width: 80px; height: 80px; }
+  .moon { width: 70px; height: 70px; }
+  .cloud.cloud-lg { width: 180px; height: 90px; }
+  .grass-blade { width: 2px; }
+  #owl-1 { width: 35px; }
+  #owl-2 { width: 28px; }
+  .bird svg { width: 80%; }
+}
