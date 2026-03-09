@@ -94,10 +94,10 @@ Download `dist/climatic.bundle.js` (62.8 KB) and add to your page:
 
 ### Option 2: CDN Link
 
-Host on GitHub Pages, jsDelivr, or any static host:
+Hosted on Pynfinity CDNs:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/YOUR_USER/CLIMATIC_APP@latest/dist/climatic.bundle.js"></script>
+<script src="https://pynfinity.com/cdn_bundles/climatic.bundle.js"></script>
 ```
 
 ### Option 3: Multi-File Setup
