@@ -75,7 +75,15 @@ Moon:    new │ waxing_crescent │ first_quarter │ waxing_gibbous │ full �
 
 ## 🚀 Quick Start
 
-### Option 1: Single Bundle (Recommended)
+### Option 1: CDN Link (Recommended)
+
+Hosted on Pynfinity CDNs:
+
+```html
+<script src="https://pynfinity.com/cdn_bundles/climatic.bundle.js"></script>
+```
+
+### Option 2: Single Bundle 
 
 Download `dist/climatic.bundle.js` (62.8 KB) and add to your page:
 
@@ -92,20 +100,12 @@ Download `dist/climatic.bundle.js` (62.8 KB) and add to your page:
 </html>
 ```
 
-### Option 2: CDN Link
-
-Hosted on Pynfinity CDNs:
-
-```html
-<script src="https://pynfinity.com/cdn_bundles/climatic.bundle.js"></script>
-```
-
 ### Option 3: Multi-File Setup
 
 For more control:
 
 ```
-access-from-pynfinity-server/
+access-from-pynfinity-server (https://pynfinity.com/cdn_bundles/climatic_app)/
 ├── index.html
 ├── climatic.css
 ├── climatic.js
