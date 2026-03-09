@@ -102,10 +102,10 @@ Hosted on Pynfinity CDNs:
 
 ### Option 3: Multi-File Setup
 
-For more control, host all 4 files together:
+For more control:
 
 ```
-your-server/
+access-from-pynfinity-server/
 ├── index.html
 ├── climatic.css
 ├── climatic.js
@@ -115,7 +115,7 @@ your-server/
 Then embed from any page:
 
 ```html
-<script src="https://your-server.com/widget.js"></script>
+<script src="https://pynfinity.com/cdn_bundles/climatic_app/widget.js"></script>
 ```
 
 ---
