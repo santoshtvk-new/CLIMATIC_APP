@@ -490,3 +490,11 @@ MIT — free for personal and commercial use.
   Zero build tools. Zero frameworks. Zero API keys.<br><br>
   <em>Just weather, math, and pixels.</em>
 </p>
+
+
+
+## 🌐 Website
+
+- 🔗 Visit: [pynfinity](https://pynfinity.com)
+- 🧑‍💻 Author: [santoshtvk](https://www.linkedin.com/in/santoshtvk/)
+
